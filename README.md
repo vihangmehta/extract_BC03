@@ -1,1 +1,2 @@
 # extract_BC03
+Python wrapper for extracting SED templates from GALAXEV (Bruzual & Charlot 2003). Requires a working GALAXEV installation. For more GALAXEV documentation: http://www.bruzual.org/bc03/doc/bc03.pdf.
