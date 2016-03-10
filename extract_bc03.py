@@ -161,15 +161,21 @@ class TemplateSED_BC03(object):
 
 	def do_bin_ised(self):
 
-		shutil.copyfile(self.model_dir+self.input_ssp+'.ised_ASCII',
-						self.workdir+self.ssp_output+'.ised_ASCII')
-		if self.verbose:
-			subprocess.call(self.rootdir+'src/bin_ised '+self.ssp_output+'.ised_ASCII',
-							cwd=self.workdir, shell=True)
+		if os.path.isfile(self.model_dir+self.input_ssp+'.ised'):
+			shutil.copyfile(self.model_dir+self.input_ssp+'.ised',
+							self.workdir+self.ssp_output+'.ised')
+		elif os.path.isfile(self.model_dir+self.input_ssp+'.ised_ASCII'):
+			shutil.copyfile(self.model_dir+self.input_ssp+'.ised_ASCII',
+							self.workdir+self.ssp_output+'.ised_ASCII')
+			if self.verbose:
+				subprocess.call(self.rootdir+'src/bin_ised '+self.ssp_output+'.ised_ASCII',
+								cwd=self.workdir, shell=True)
+			else:
+				subprocess.call(self.rootdir+'src/bin_ised '+self.ssp_output+'.ised_ASCII',
+								cwd=self.workdir, shell=True, stdout=open(os.devnull,'w'), stderr=open(os.devnull,'w'))
+			os.remove(self.workdir+self.ssp_output+'.ised_ASCII')
 		else:
-			subprocess.call(self.rootdir+'src/bin_ised '+self.ssp_output+'.ised_ASCII',
-							cwd=self.workdir, shell=True, stdout=open(os.devnull,'w'), stderr=open(os.devnull,'w'))
-		os.remove(self.workdir+self.ssp_output+'.ised_ASCII')
+			raise Exception('Template %s not found in %s.' % (self.input_ssp,self.model_dir))
 
 	def mk_csp_input(self):
 
