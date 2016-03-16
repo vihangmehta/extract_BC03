@@ -4,7 +4,7 @@ import numpy as np
 line_ratios = pyfits.getdata('emline_ratios.fits')
 
 # ADD EMISSION LINES
-def add_emission_lines(sed_waves, sed_spec, Q, metallicity):
+def add_emission_lines(sed_waves, sed_spec, Q, metallicity, units):
 
 	l_hb = 4861.
 	l_ha = 6563.
@@ -32,6 +32,13 @@ def add_emission_lines(sed_waves, sed_spec, Q, metallicity):
 
 		line_prof = (1./np.sqrt(2*np.pi)/sigma) * np.exp(-0.5*(sed_waves - line_center)**2 / sigma**2)
 		line_prof = line_lum * line_prof
-		sed_spec = sed_spec + line_prof
+		if units == 'flambda':
+			sed_spec = sed_spec + line_prof
+		elif units == 'fnu':
+			sed_spec = sed_spec / (sed_waves**2 / 3e18)
+			sed_spec = sed_spec + line_prof
+			sed_spec = sed_spec * (sed_waves**2 / 3e18)
+		else:
+			raise Exception('Wrong units in add_emission_lines().')
 
 	return sed_spec

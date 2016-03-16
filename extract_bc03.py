@@ -293,7 +293,7 @@ class TemplateSED_BC03(object):
 	def add_emlines(self):
 
 		for x in self.sed.dtype.names[1:]:
-			self.sed[x] = add_emission_lines(self.sed['waves'], self.sed[x], self.Q[x], self.metallicity)
+			self.sed[x] = add_emission_lines(self.sed['waves'], self.sed[x], self.Q[x], self.metallicity, self.units)
 
 	def add_dust(self):
 
