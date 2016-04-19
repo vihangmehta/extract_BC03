@@ -53,7 +53,7 @@ class TemplateSED_BC03(object):
         workdir:         Working directory to store temporary files
         library_version: Specify which version of BC03 -- 2003, 2012
         library:         Specify specific library (only valid for 2012 version) -- 'stelib','BaSeL'
-        input_ised:       Option to directly specify what input ISED file to use
+        input_ised:      Option to directly specify what input ISED file to use
         cleanup:         Cleanup the temporary files?
         verbose:         Print messages to terminal?
         """
