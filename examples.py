@@ -5,7 +5,7 @@ from extract_bc03 import TemplateSED_BC03
 def plot():
 
     template = TemplateSED_BC03(metallicity=0.02, age=[1,2,3,5,10], sfh='exp', tau=2, Av=1,
-                                #input_ssp='bc2003_lr_BaSeL_m22_chab_ssp',
+                                #input_ised='bc2003_lr_BaSeL_m22_chab_ssp.ised',
                                 dust='calzetti', emlines=True,
                                 redshift=3, igm=True,
                                 imf='chab', res='lr', uid='test', units='flambda',

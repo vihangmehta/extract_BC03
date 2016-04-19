@@ -10,7 +10,7 @@ from igm_attenuation import inoue_tau
 class TemplateSED_BC03(object):
 
     def __init__(self,
-                 age, sfh, metallicity=None, input_ssp=None,
+                 age, sfh, metallicity=None, input_ised=None,
                  tau=None, Av=None, emlines=False, dust='none',
                  redshift=None, igm=False,
                  sfr=1, gasrecycle=False, epsilon=0.001, tcutsfr=20,
@@ -44,7 +44,7 @@ class TemplateSED_BC03(object):
                             - 'lnu':       ergs/s/Hz
                             - 'llambda':   ergs/s/Angs
         W1, W2:          Limits of the wavelength range to compute the SED in [BC2003 option]
-        imf:             Initial Mass Function ('salp' or 'chab') [BC2003 option]
+        imf:             Initial Mass Function ('salp', 'chab' or 'kroup' if using 2012 version) [BC2003 option]
         res:             Resolution of the SED [BC2003 option]
                             - 'hr':         High resolution
                             - 'lr':         Low resolution
@@ -53,7 +53,7 @@ class TemplateSED_BC03(object):
         workdir:         Working directory to store temporary files
         library_version: Specify which version of BC03 -- 2003, 2012
         library:         Specify specific library (only valid for 2012 version) -- 'stelib','BaSeL'
-        input_ssp:       Option to directly specify what input ISED file to use
+        input_ised:       Option to directly specify what input ISED file to use
         cleanup:         Cleanup the temporary files?
         verbose:         Print messages to terminal?
         """
@@ -83,11 +83,12 @@ class TemplateSED_BC03(object):
         self.library     = library
         self.library_version = library_version
 
-        if input_ssp:
-            warnings.warn('Ignoring IMF and Metallicity args and using provided input ISED file: %s' % input_ssp)
-            self.input_ssp = input_ssp
-            self.imf = input_ssp.split('_')[-2]
-            self.metallicity = self.inv_metallicity_key[input_ssp.split('_')[-3]]
+        if input_ised:
+            if ".ised" in input_ised: input_ised = input_ised[:-5]
+            warnings.warn('Ignoring IMF and Metallicity args and using provided input ISED file: %s' % input_ised)
+            self.input_ised = input_ised
+            self.imf = input_ised.split('_')[-2]
+            self.metallicity = self.inv_metallicity_key[input_ised.split('_')[-3]]
         else:
             self.metallicity = metallicity
             self.imf = imf
@@ -98,10 +99,10 @@ class TemplateSED_BC03(object):
         self.read_age_input()
         self.check_input()
 
-        if   not input_ssp and self.library_version==2003:
-            self.input_ssp = 'bc2003_'+self.res+'_'+self.metallicity_key[self.metallicity]+'_'+self.imf+'_ssp'
-        elif not input_ssp and self.library_version==2012:
-            self.input_ssp = 'bc2003_'+self.res+'_'+self.library+'_'+self.metallicity_key[self.metallicity]+'_'+self.imf+'_ssp'
+        if   not input_ised and self.library_version==2003:
+            self.input_ised = 'bc2003_'+self.res+'_'+self.metallicity_key[self.metallicity]+'_'+self.imf+'_ssp'
+        elif not input_ised and self.library_version==2012:
+            self.input_ised = 'bc2003_'+self.res+'_'+self.library+'_'+self.metallicity_key[self.metallicity]+'_'+self.imf+'_ssp'
 
         self.model_dir = self.rootdir+'models/Padova1994/'+self.imf_dir_key[self.imf]+'/'
         self.workdir = workdir+'/' if workdir else os.getcwd()+'/'
@@ -191,11 +192,11 @@ class TemplateSED_BC03(object):
 
     def do_bin_ised(self):
 
-        if   os.path.isfile(self.model_dir+self.input_ssp+'.ised'):
-            shutil.copyfile(self.model_dir+self.input_ssp+'.ised',
+        if   os.path.isfile(self.model_dir+self.input_ised+'.ised'):
+            shutil.copyfile(self.model_dir+self.input_ised+'.ised',
                             self.workdir+self.ssp_output+'.ised')
-        elif os.path.isfile(self.model_dir+self.input_ssp+'.ised_ASCII'):
-            shutil.copyfile(self.model_dir+self.input_ssp+'.ised_ASCII',
+        elif os.path.isfile(self.model_dir+self.input_ised+'.ised_ASCII'):
+            shutil.copyfile(self.model_dir+self.input_ised+'.ised_ASCII',
                             self.workdir+self.ssp_output+'.ised_ASCII')
             if self.verbose:
                 subprocess.call(self.rootdir+'src/bin_ised '+self.ssp_output+'.ised_ASCII',
@@ -205,7 +206,7 @@ class TemplateSED_BC03(object):
                                 cwd=self.workdir, shell=True, stdout=open(os.devnull,'w'), stderr=open(os.devnull,'w'))
             os.remove(self.workdir+self.ssp_output+'.ised_ASCII')
         else:
-            raise Exception('Template %s not found in %s.' % (self.input_ssp,self.model_dir))
+            raise Exception('Template %s not found in %s.' % (self.input_ised,self.model_dir))
 
     def mk_csp_input(self):
 
