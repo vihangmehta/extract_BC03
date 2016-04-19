@@ -93,10 +93,10 @@ class TemplateSED_BC03(object):
 		self.model_dir = self.rootdir+'models/Padova1994/'+self.imf_dir_key[self.imf]+'/'
 		if input_ssp:
 			self.input_ssp = input_ssp
-		elif self.library_version==2012:
-			self.input_ssp = 'bc2003_'+self.res+'_'+self.library+'_'+self.metallicity_key[self.metallicity]+'_'+self.imf+'_ssp'
 		elif self.library_version==2003:
 			self.input_ssp = 'bc2003_'+self.res+'_'+self.metallicity_key[self.metallicity]+'_'+self.imf+'_ssp'
+		elif self.library_version==2012:
+			self.input_ssp = 'bc2003_'+self.res+'_'+self.library+'_'+self.metallicity_key[self.metallicity]+'_'+self.imf+'_ssp'
 
 		self.workdir = workdir+'/' if workdir else os.getcwd()+'/'
 		self.uid = uid
