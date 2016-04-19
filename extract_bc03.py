@@ -1,6 +1,7 @@
 import os, shutil, subprocess
 import numpy as np
 import matplotlib.pyplot as plt
+import warnings
 
 from dust_extinction import calzetti
 from add_emlines import add_emission_lines
@@ -9,13 +10,13 @@ from igm_attenuation import inoue_tau
 class TemplateSED_BC03(object):
 
     def __init__(self,
-                 metallicity, age, sfh, tau=None, Av=None,
-                 emlines=False, dust='none',
+                 age, sfh, metallicity=None, input_ssp=None,
+                 tau=None, Av=None, emlines=False, dust='none',
                  redshift=None, igm=False,
                  sfr=1, gasrecycle=False, epsilon=0.001, tcutsfr=20,
                  units='flambda', W1=1, W2=1e7,
                  imf='chab', res='hr', uid=None,
-                 rootdir='galaxev/', library_version=2003, library='stelib', input_ssp=None,
+                 rootdir='galaxev/', library_version=2003, library='stelib',
                  workdir=None, cleanup=True, verbose=True):
 
         """
@@ -59,11 +60,10 @@ class TemplateSED_BC03(object):
 
         self.sfh_key = {'ssp':0,'exp':1,'single':2,'constant':3}
         self.imf_dir_key = {'salp':'salpeter','chab':'chabrier','kroup':'kroupa'}
-        self.metallicity_key = {0.0001:'m22',0.0004:'m32',0.004:'m42',0.008:'m52',0.02:'m62',0.05:'m72'}
+        self.metallicity_key = {0.0001:'m22',0.0004:'m32',0.004:'m42',0.008:'m52',0.02:'m62',0.05:'m72',0.1:'m82'}
+        self.inv_metallicity_key = dict([[v,k] for k,v in self.metallicity_key.items()])
 
-        self.imf         = imf
         self.res         = res
-        self.metallicity = metallicity
         self.age         = age
         self.sfh         = sfh
         self.sfr         = sfr
@@ -82,7 +82,15 @@ class TemplateSED_BC03(object):
         self.rootdir     = rootdir
         self.library     = library
         self.library_version = library_version
-        self.age_limit   = 24 if self.library_version==2003 else 250
+
+        if input_ssp:
+            warnings.warn('Ignoring IMF and Metallicity args and using provided input ISED file: %s' % input_ssp)
+            self.input_ssp = input_ssp
+            self.imf = input_ssp.split('_')[-2]
+            self.metallicity = self.inv_metallicity_key[input_ssp.split('_')[-3]]
+        else:
+            self.metallicity = metallicity
+            self.imf = imf
 
         self.Q = {}
         self.M_unnorm = {}
@@ -90,14 +98,12 @@ class TemplateSED_BC03(object):
         self.read_age_input()
         self.check_input()
 
-        self.model_dir = self.rootdir+'models/Padova1994/'+self.imf_dir_key[self.imf]+'/'
-        if input_ssp:
-            self.input_ssp = input_ssp
-        elif self.library_version==2003:
+        if   not input_ssp and self.library_version==2003:
             self.input_ssp = 'bc2003_'+self.res+'_'+self.metallicity_key[self.metallicity]+'_'+self.imf+'_ssp'
-        elif self.library_version==2012:
+        elif not input_ssp and self.library_version==2012:
             self.input_ssp = 'bc2003_'+self.res+'_'+self.library+'_'+self.metallicity_key[self.metallicity]+'_'+self.imf+'_ssp'
 
+        self.model_dir = self.rootdir+'models/Padova1994/'+self.imf_dir_key[self.imf]+'/'
         self.workdir = workdir+'/' if workdir else os.getcwd()+'/'
         self.uid = uid
         self.ssp_output = self.uid+'_ssp'
@@ -111,12 +117,15 @@ class TemplateSED_BC03(object):
 
     def read_age_input(self):
 
+        if   self.library_version==2003: self.age_limit = 24
+        elif self.library_version==2012: self.age_limit = 100
+
         if not (isinstance(self.age,np.ndarray) or isinstance(self.age,list)):
             self.ages = str(self.age)
             self.age = np.array([self.age,])
-        elif len(self.age) < self.age_limit:
+        elif len(self.age) <= self.age_limit:
             self.age = np.asarray(self.age)
-            self.ages = ','.join(np.round(self.age,4).astype(str))
+            self.ages = ','.join(np.round(self.age,6).astype(str))
         else:
             raise Exception('Cannot provide more than %i ages!' % self.age_limit)
 
@@ -146,7 +155,7 @@ class TemplateSED_BC03(object):
             raise Exception("Incorrect redshift provided: "+str(self.redshift)+"\n" \
                             "Please provide a positive value.")
         if self.redshift is None and self.igm:
-            raise Warning("No redshift provided, and thus IGM attentuation cannot be applied.")
+            warnings.warn("No redshift provided, and thus IGM attentuation cannot be applied.")
         if self.library_version not in [2003,2012]:
             raise Exception("Invalid library_version: "+str(self.library_version)+"\n" \
                             "Please choose from: 2003,2012")

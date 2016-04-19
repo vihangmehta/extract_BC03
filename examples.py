@@ -5,11 +5,12 @@ from extract_bc03 import TemplateSED_BC03
 def plot():
 
     template = TemplateSED_BC03(metallicity=0.02, age=[1,2,3,5,10], sfh='exp', tau=2, Av=1,
+                                #input_ssp='bc2003_lr_BaSeL_m22_chab_ssp',
                                 dust='calzetti', emlines=True,
                                 redshift=3, igm=True,
-                                imf='chab', res='hr', uid='test', units='flambda',
+                                imf='chab', res='lr', uid='test', units='flambda',
                                 rootdir='/data/highzgal/mehta/galaxev12/',workdir='.',
-                                library_version=2012, library='stelib',
+                                library_version=2012, library='BaSeL',
                                 cleanup=True,verbose=False)
     template.generate_sed()
 
