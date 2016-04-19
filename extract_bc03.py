@@ -14,46 +14,51 @@ class TemplateSED_BC03(object):
 				 redshift=None, igm=False,
 				 sfr=1, gasrecycle=False, epsilon=0.001, tcutsfr=20,
 				 units='flambda', W1=1, W2=1e7,
-				 imf='chab', res='hr', uid=None, rootdir='galaxev/', workdir=None, cleanup=True, verbose=True):
+				 imf='chab', res='hr', uid=None,
+				 rootdir='galaxev/', library_version=2003, library='stelib', input_ssp=None,
+				 workdir=None, cleanup=True, verbose=True):
 
 		"""
-		metallicity: 	0.0001(m22), 0.0004(m32), 0.004(m42), 0.004(m52), 0.02(m62), 0.05(m72) [BC2003 option]
-		age:		 	0 < age < 13.5 Gyr [BC2003 option]
-		sfh: 		 	Star formation history [BC2003 option]
-					 		- 'constant':	constant SFR (requires SFR, TCUTSFR)
-					 		- 'exp':		exponentially declining  (requires TAU, TCUTSFR, GASRECYCLE[, EPSILON])
-					 		- 'ssp':		single stellar pop
-					 		- 'single':		single burst  (requires TAU - length of burst)
-		tau:		 	e-folding timescale for exponentially declining SFH [BC2003 option]
-		Av:			 	dust content (A_v)
-		emlines:	 	adds emission lines
-		dust:		 	dust extinction law
- 					 		- 'none':		No dust extinction to be applied
- 					 		- 'calzetti':	Apply Calzetti (2000) dust law
- 					 		- 'cardelli':	Apply Cardelli (1989) dust law
- 		z:				Redshift for the SED
- 		igm:			Apply IGM attentuation?
- 		SFR:		 	Star formation rate [BC2003 option]
- 		gasrecycle:  	Recycle the gas [BC2003 option]
- 		epsilon: 	 	Fraction of recycled gas [BC2003 option]
- 		tcutsfr:	 	Time at which SFR drops to 0
- 		units:	 	 	Units to return the sed in [BC2003 option]
- 							- 'lnu':       ergs/s/Hz
- 							- 'llambda':   ergs/s/Angs
- 		W1, W2:		 	Limits of the wavelength range to compute the SED in [BC2003 option]
-		imf:		 	Initial Mass Function ('salp' or 'chab') [BC2003 option]
-		res: 		 	Resolution of the SED [BC2003 option]
-							- 'hr':			High resolution
-							- 'lr':			Low resolution
-		uid:		 	Unique ID for the SED
-		rootdir:	 	Root directory for the GALAXEv installation
-		workdir:	 	Working directory to store temporary files
-		cleanup:	 	Cleanup the temporary files?
-		verbose:	 	Print messages to terminal?
+		metallicity: 	 0.0001(m22), 0.0004(m32), 0.004(m42), 0.004(m52), 0.02(m62), 0.05(m72) [BC2003 option]
+		age:		 	 0 < age < 13.5 Gyr [BC2003 option]
+		sfh: 		 	 Star formation history [BC2003 option]
+					 	 	- 'constant':	constant SFR (requires SFR, TCUTSFR)
+					 	 	- 'exp':		exponentially declining  (requires TAU, TCUTSFR, GASRECYCLE[, EPSILON])
+					 	 	- 'ssp':		single stellar pop
+					 	 	- 'single':		single burst  (requires TAU - length of burst)
+		tau:		 	 e-folding timescale for exponentially declining SFH [BC2003 option]
+		Av:			 	 dust content (A_v)
+		emlines:	 	 adds emission lines
+		dust:		 	 dust extinction law
+ 					 	 	- 'none':		No dust extinction to be applied
+ 					 	 	- 'calzetti':	Apply Calzetti (2000) dust law
+ 					 	 	- 'cardelli':	Apply Cardelli (1989) dust law
+ 		z:				 Redshift for the SED
+ 		igm:			 Apply IGM attentuation?
+ 		SFR:		 	 Star formation rate [BC2003 option]
+ 		gasrecycle:  	 Recycle the gas [BC2003 option]
+ 		epsilon: 	 	 Fraction of recycled gas [BC2003 option]
+ 		tcutsfr:	 	 Time at which SFR drops to 0
+ 		units:	 	 	 Units to return the sed in [BC2003 option]
+ 						  	- 'lnu':       ergs/s/Hz
+ 						 	- 'llambda':   ergs/s/Angs
+ 		W1, W2:		 	 Limits of the wavelength range to compute the SED in [BC2003 option]
+		imf:		 	 Initial Mass Function ('salp' or 'chab') [BC2003 option]
+		res: 		 	 Resolution of the SED [BC2003 option]
+						 	- 'hr':			High resolution
+						 	- 'lr':			Low resolution
+		uid:		 	 Unique ID for the SED
+		rootdir:	 	 Root directory for the GALAXEv installation
+		workdir:	 	 Working directory to store temporary files
+		library_version: Specify which version of BC03 -- 2003, 2012
+		library:         Specify specific library (only valid for 2012 version) -- 'stelib','BaSeL'
+		input_ssp:       Option to directly specify what input ISED file to use
+		cleanup:	 	 Cleanup the temporary files?
+		verbose:	 	 Print messages to terminal?
 		"""
 
 		self.sfh_key = {'ssp':0,'exp':1,'single':2,'constant':3}
-		self.imf_dir_key = {'salp':'salpeter','chab':'chabrier'}
+		self.imf_dir_key = {'salp':'salpeter','chab':'chabrier','kroup':'kroupa'}
 		self.metallicity_key = {0.0001:'m22',0.0004:'m32',0.004:'m42',0.008:'m52',0.02:'m62',0.05:'m72'}
 
 		self.imf 		 = imf
@@ -74,7 +79,10 @@ class TemplateSED_BC03(object):
 		self.units		 = units
 		self.W1			 = W1
 		self.W2			 = W2
-		self.rootdir   = rootdir
+		self.rootdir     = rootdir
+		self.library     = library
+		self.library_version = library_version
+		self.age_limit   = 24 if self.library_version==2003 else 250
 
 		self.Q = {}
 		self.M_unnorm = {}
@@ -83,7 +91,12 @@ class TemplateSED_BC03(object):
 		self.check_input()
 
 		self.model_dir = self.rootdir+'models/Padova1994/'+self.imf_dir_key[self.imf]+'/'
-		self.input_ssp = 'bc2003_'+self.res+'_'+self.metallicity_key[self.metallicity]+'_'+self.imf+'_ssp'
+		if input_ssp:
+			self.input_ssp = input_ssp
+		elif self.library_version==2012:
+			self.input_ssp = 'bc2003_'+self.res+'_'+self.library+'_'+self.metallicity_key[self.metallicity]+'_'+self.imf+'_ssp'
+		elif self.library_version==2003:
+			self.input_ssp = 'bc2003_'+self.res+'_'+self.metallicity_key[self.metallicity]+'_'+self.imf+'_ssp'
 
 		self.workdir = workdir+'/' if workdir else os.getcwd()+'/'
 		self.uid = uid
@@ -101,45 +114,53 @@ class TemplateSED_BC03(object):
 		if not (isinstance(self.age,np.ndarray) or isinstance(self.age,list)):
 			self.ages = str(self.age)
 			self.age = np.array([self.age,])
-		elif len(self.age) < 25:
+		elif len(self.age) < self.age_limit:
 			self.age = np.asarray(self.age)
 			self.ages = ','.join(np.round(self.age,4).astype(str))
 		else:
-			raise Exception('Cannot provide more than 24 ages!')
+			raise Exception('Cannot provide more than %i ages!' % self.age_limit)
 
 	def check_input(self):
 
 		if any(self.age > 13.5):
 			raise Exception("SED age (%s) provided is older than the Universe (13.5 Gyr)!" % str(self.age))
 		if self.sfh not in self.sfh_key.keys():
-			raise Exception("Incorrect SFH provided:"+str(self.sfh)+"\n" \
+			raise Exception("Incorrect SFH provided: "+str(self.sfh)+"\n" \
 							"Please choose from:"+str(self.sfh_key.keys()))
 		if self.metallicity not in self.metallicity_key.keys():
-			raise Exception("Incorrect metallicity provided:"+str(self.metallicity)+"\n" \
+			raise Exception("Incorrect metallicity provided: "+str(self.metallicity)+"\n" \
 							"Please choose from:"+str(self.metallicity_key.keys()))
 		if self.imf not in self.imf_dir_key.keys():
-			raise Exception("Incorrect IMF provided:"+str(self.imf)+"\n" \
+			raise Exception("Incorrect IMF provided: "+str(self.imf)+"\n" \
 							"Please choose from:"+str(self.imf_dir_key.keys()))
 		if self.res not in ['hr','lr']:
-			raise Exception("Incorrect resolution provided:"+str(self.res)+"\n" \
+			raise Exception("Incorrect resolution provided: "+str(self.res)+"\n" \
 							"Please choose from: 'hr','lr'")
 		if self.units not in ['flambda','fnu']:
-			raise Exception("Incorrect flux units provided:"+str(self.units)+"\n" \
+			raise Exception("Incorrect flux units provided: "+str(self.units)+"\n" \
 							"Please choose from: 'flambda','fnu'")
 		if self.dust not in ['none','calzetti','cardelli']:
-			raise Exception("Incorrect dust law provided:"+str(self.dust)+"\n" \
+			raise Exception("Incorrect dust law provided: "+str(self.dust)+"\n" \
 							"Please choose from: 'none','calzetti','cardelli'")
 		if self.redshift is not None and self.redshift < 0:
-			raise Exception("Incorrect redshift provided:"+str(self.redshift)+"\n" \
+			raise Exception("Incorrect redshift provided: "+str(self.redshift)+"\n" \
 							"Please provide a positive value.")
 		if self.redshift is None and self.igm:
 			raise Warning("No redshift provided, and thus IGM attentuation cannot be applied.")
+		if self.library_version not in [2003,2012]:
+			raise Exception("Invalid library_version: "+str(self.library_version)+"\n" \
+							"Please choose from: 2003,2012")
+		if self.library not in ['stelib','BaSeL']:
+			raise Exception("Incorrect library choice: "+str(self.library)+"\n" \
+							"Please choose from: 'stelib','BaSeL'")
 
 	def define_env(self):
 
 		self.env_string = "export FILTERS="+self.rootdir+"src/FILTERBIN.RES;" \
 						  "export A0VSED="+self.rootdir+"src/A0V_KURUCZ_92.SED;" \
 						  "export RF_COLORS_ARRAYS="+self.rootdir+"src/RF_COLORS.filters;"
+		if self.library_version == 2012:
+			self.env_string += "export SUNSED="+self.rootdir+"src/SUN_KURUCZ_92.SED;"
 
 	def generate_sed(self):
 
@@ -161,7 +182,7 @@ class TemplateSED_BC03(object):
 
 	def do_bin_ised(self):
 
-		if os.path.isfile(self.model_dir+self.input_ssp+'.ised'):
+		if   os.path.isfile(self.model_dir+self.input_ssp+'.ised'):
 			shutil.copyfile(self.model_dir+self.input_ssp+'.ised',
 							self.workdir+self.ssp_output+'.ised')
 		elif os.path.isfile(self.model_dir+self.input_ssp+'.ised_ASCII'):
@@ -182,6 +203,7 @@ class TemplateSED_BC03(object):
 		self.csp_input = {}
 		self.csp_input['CSPINPUT'] = self.ssp_output
 		self.csp_input['DUST'] = 'N'
+		self.csp_input['REDSHIFT'] = str(0)
 		self.csp_input['SFHCODE'] = str(self.sfh_key[self.sfh])
 		self.csp_input['SFR'] = str(self.sfr)
 		self.csp_input['TAU'] = str(self.tau)
@@ -194,6 +216,8 @@ class TemplateSED_BC03(object):
 
 		csp_input_string =  self.csp_input['CSPINPUT'] + '\n'
 		csp_input_string += self.csp_input['DUST'] +  '\n'
+		if self.library_version==2012:
+			csp_input_string += self.csp_input['REDSHIFT'] +  '\n'
 		csp_input_string += self.csp_input['SFHCODE'] + '\n'
 
 		if   self.sfh == 'ssp':
@@ -236,6 +260,16 @@ class TemplateSED_BC03(object):
 		os.remove(self.workdir+self.csp_output+'.8lsindx_sed_fluxes')
 		os.remove(self.workdir+'bc03.rm')
 
+		if self.library_version==2012:
+			os.remove(self.workdir+self.csp_output+'.9color')
+			os.remove(self.workdir+self.csp_output+'.acs_wfc_color')
+			os.remove(self.workdir+self.csp_output+'.legus_uvis1_color')
+			os.remove(self.workdir+self.csp_output+'.wfc3_color')
+			os.remove(self.workdir+self.csp_output+'.wfc3_uvis1_color')
+			os.remove(self.workdir+self.csp_output+'.wfpc2_johnson_color')
+			os.remove(self.workdir+self.csp_output+'.w_age_rf')
+			os.remove(self.workdir+'fort.24')
+
 	def mk_gpl_input(self):
 
 		self.gpl_input = {}
@@ -248,8 +282,14 @@ class TemplateSED_BC03(object):
 	def do_gpl(self):
 
 		gpl_input_string =  self.gpl_input['GPLINPUT'] + '\n'
-		gpl_input_string += self.gpl_input['W1W2W0F0Z'] + '\n'
-		gpl_input_string += self.gpl_input['AGES'] + '\n'
+
+		if self.library_version==2003:
+			gpl_input_string += self.gpl_input['W1W2W0F0Z'] + '\n'
+			gpl_input_string += self.gpl_input['AGES'] + '\n'
+		elif self.library_version==2012:
+			gpl_input_string += self.gpl_input['AGES'] + '\n'
+			gpl_input_string += self.gpl_input['W1W2W0F0Z'] + '\n'
+
 		gpl_input_string += self.gpl_input['GPLOUTPUT'] + '\n'
 
 		with open(self.workdir+self.uid+'_gpl.in','w') as f: f.write(gpl_input_string)

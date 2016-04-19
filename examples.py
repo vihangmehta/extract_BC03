@@ -7,8 +7,9 @@ def plot():
     template = TemplateSED_BC03(metallicity=0.02, age=[1,2,3,5,10], sfh='exp', tau=2, Av=1,
                                 dust='calzetti', emlines=True,
                                 redshift=3, igm=True,
-                                imf='chab', res='lr', uid='test', units='flambda',
-                                rootdir='/data/highzgal/mehta/galaxev/',workdir='.',
+                                imf='chab', res='hr', uid='test', units='flambda',
+                                rootdir='/data/highzgal/mehta/galaxev12/',workdir='.',
+                                library_version=2012, library='stelib',
                                 cleanup=True,verbose=False)
     template.generate_sed()
 
@@ -30,6 +31,8 @@ def plot():
     ax.set_yscale('log')
     ax.set_xlabel('Rest-frame Wavelength [$\AA$]')
     ax.set_ylabel('L$_\lambda$ [ergs/s/$\AA$]')
+    ax.set_xlim(1e2,1e8)
+    ax.set_ylim(1e17,1e31)
     plt.show()
 
 if __name__ == '__main__':
