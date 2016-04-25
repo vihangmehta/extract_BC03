@@ -172,6 +172,10 @@ class TemplateSED_BC03(object):
         if self.library_version == 2012:
             self.env_string += "export SUNSED="+self.rootdir+"src/SUN_KURUCZ_92.SED;"
 
+    def del_file(self,f):
+
+        if os.path.isfile(f): os.remove(f)
+
     def generate_sed(self):
 
         self.do_bin_ised()
@@ -204,7 +208,7 @@ class TemplateSED_BC03(object):
             else:
                 subprocess.call(self.rootdir+'src/bin_ised '+self.ssp_output+'.ised_ASCII',
                                 cwd=self.workdir, shell=True, stdout=open(os.devnull,'w'), stderr=open(os.devnull,'w'))
-            os.remove(self.workdir+self.ssp_output+'.ised_ASCII')
+            self.del_file(self.workdir+self.ssp_output+'.ised_ASCII')
         else:
             raise Exception('Template %s not found in %s.' % (self.input_ised,self.model_dir))
 
@@ -253,32 +257,32 @@ class TemplateSED_BC03(object):
         else:
             subprocess.call(self.env_string+self.rootdir+'src/csp_galaxev < '+self.uid+'_csp.in',
                             cwd=self.workdir, shell=True, stdout=open(os.devnull,'w'), stderr=open(os.devnull,'w'))
-        os.remove(self.workdir+self.uid+'_csp.in')
+        self.del_file(self.workdir+self.uid+'_csp.in')
 
     def csp_cleanup(self):
 
-        os.remove(self.workdir+self.csp_output+'.1ABmag')
-        os.remove(self.workdir+self.csp_output+'.1color')
-        os.remove(self.workdir+self.csp_output+'.2color')
-        os.remove(self.workdir+self.csp_output+'.5color')
-        os.remove(self.workdir+self.csp_output+'.6lsindx_ffn')
-        os.remove(self.workdir+self.csp_output+'.6lsindx_sed')
-        os.remove(self.workdir+self.csp_output+'.6lsindx_sed_lick_system')
-        os.remove(self.workdir+self.csp_output+'.7lsindx_ffn')
-        os.remove(self.workdir+self.csp_output+'.7lsindx_sed')
-        os.remove(self.workdir+self.csp_output+'.7lsindx_sed_lick_system')
-        os.remove(self.workdir+self.csp_output+'.8lsindx_sed_fluxes')
-        os.remove(self.workdir+'bc03.rm')
+        self.del_file(self.workdir+self.csp_output+'.1ABmag')
+        self.del_file(self.workdir+self.csp_output+'.1color')
+        self.del_file(self.workdir+self.csp_output+'.2color')
+        self.del_file(self.workdir+self.csp_output+'.5color')
+        self.del_file(self.workdir+self.csp_output+'.6lsindx_ffn')
+        self.del_file(self.workdir+self.csp_output+'.6lsindx_sed')
+        self.del_file(self.workdir+self.csp_output+'.6lsindx_sed_lick_system')
+        self.del_file(self.workdir+self.csp_output+'.7lsindx_ffn')
+        self.del_file(self.workdir+self.csp_output+'.7lsindx_sed')
+        self.del_file(self.workdir+self.csp_output+'.7lsindx_sed_lick_system')
+        self.del_file(self.workdir+self.csp_output+'.8lsindx_sed_fluxes')
+        self.del_file(self.workdir+'bc03.rm')
 
         if self.library_version==2012:
-            os.remove(self.workdir+self.csp_output+'.9color')
-            os.remove(self.workdir+self.csp_output+'.acs_wfc_color')
-            os.remove(self.workdir+self.csp_output+'.legus_uvis1_color')
-            os.remove(self.workdir+self.csp_output+'.wfc3_color')
-            os.remove(self.workdir+self.csp_output+'.wfc3_uvis1_color')
-            os.remove(self.workdir+self.csp_output+'.wfpc2_johnson_color')
-            os.remove(self.workdir+self.csp_output+'.w_age_rf')
-            os.remove(self.workdir+'fort.24')
+            self.del_file(self.workdir+self.csp_output+'.9color')
+            self.del_file(self.workdir+self.csp_output+'.acs_wfc_color')
+            self.del_file(self.workdir+self.csp_output+'.legus_uvis1_color')
+            self.del_file(self.workdir+self.csp_output+'.wfc3_color')
+            self.del_file(self.workdir+self.csp_output+'.wfc3_uvis1_color')
+            self.del_file(self.workdir+self.csp_output+'.wfpc2_johnson_color')
+            self.del_file(self.workdir+self.csp_output+'.w_age_rf')
+            self.del_file(self.workdir+'fort.24')
 
     def mk_gpl_input(self):
 
@@ -309,12 +313,12 @@ class TemplateSED_BC03(object):
         else:
             subprocess.call(self.rootdir+'src/galaxevpl < '+self.uid+'_gpl.in',
                             cwd=self.workdir, shell=True, stdout=open(os.devnull,'w'), stderr=open(os.devnull,'w'))
-        os.remove(self.workdir+self.uid+'_gpl.in')
+        self.del_file(self.workdir+self.uid+'_gpl.in')
 
     def gpl_cleanup(self):
 
-        os.remove(self.workdir+self.ssp_output+'.ised')
-        os.remove(self.workdir+self.csp_output+'.ised')
+        self.del_file(self.workdir+self.ssp_output+'.ised')
+        self.del_file(self.workdir+self.csp_output+'.ised')
 
     def read_gpl(self):
 
