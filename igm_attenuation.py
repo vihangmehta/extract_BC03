@@ -1,6 +1,9 @@
 import numpy as np
 
-inoue_coeffs = np.genfromtxt('inoue_coeffs.dat',dtype=[('j',int),('lambda',float),('A1_LAF',float),('A2_LAF',float),('A3_LAF',float),('A1_DLA',float),('A2_DLA',float)],unpack=True)
+try:
+    inoue_coeffs = np.genfromtxt('inoue_coeffs.dat',dtype=[('j',int),('lambda',float),('A1_LAF',float),('A2_LAF',float),('A3_LAF',float),('A1_DLA',float),('A2_DLA',float)],unpack=True)
+except:
+    inoue_coeffs = np.genfromtxt('extract_bc03/inoue_coeffs.dat',dtype=[('j',int),('lambda',float),('A1_LAF',float),('A2_LAF',float),('A3_LAF',float),('A1_DLA',float),('A2_DLA',float)],unpack=True)
 
 #INOUE IGM ATTENUATION
 def inoue_tau(l,z):

@@ -1,10 +1,13 @@
-import pyfits
+import astropy.io.fits as fitsio
 import numpy as np
 
-line_ratios = pyfits.getdata('emline_ratios.fits')
+try:
+    line_ratios = fitsio.getdata('emline_ratios.fits')
+except:
+    line_ratios = fitsio.getdata('extract_bc03/emline_ratios.fits')
 
 # ADD EMISSION LINES
-def add_emission_lines(sed_waves, sed_spec, Q, metallicity, units):
+def add_emission_lines(sed_waves, sed_spec, Q, metallicity, units, lya_esc=0.2):
 
     l_hb = 4861.
     l_ha = 6563.
@@ -12,7 +15,7 @@ def add_emission_lines(sed_waves, sed_spec, Q, metallicity, units):
 
     lum_hb = 4.757e-13 * 10**Q
     lum_ha = 1.37e-12 * 10**Q
-    lum_lya = 1.04e-11 * 10**Q
+    lum_lya = 1.04e-11 * 10**Q * lya_esc
 
     if metallicity in [0.0001, 0.0004]:
         ratios = line_ratios['M32_RATIO'][0]
