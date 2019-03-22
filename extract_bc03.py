@@ -6,26 +6,26 @@ import warnings
 try:
     from extinction import calzetti00, apply
 except ImportError:
-    from dust_extinction import calzetti
-from dust_extinction import cardelli
-from add_emlines import add_emission_lines
-from igm_attenuation import inoue_tau
+    from .dust_extinction import calzetti
+from .dust_extinction import cardelli
+from .add_emlines import add_emission_lines
+from .igm_attenuation import inoue_tau
 
 class TemplateSED_BC03(object):
 
     def __init__(self,
                  age, sfh=None, metallicity=None, input_ised=None, input_sfh=None,
-                 tau=None, Av=None, emlines=False, dust='none',
-                 redshift=None, igm=False,
+                 tau=None, Av=None, emlines=False, dust='calzetti',
+                 redshift=None, igm=True,
                  sfr=1, gasrecycle=False, epsilon=0.001, tcutsfr=20,
                  units='flambda', W1=1, W2=1e7,
                  lya_esc=0.2, lyc_esc=0,
                  imf='chab', res='hr', uid=None,
-                 rootdir='galaxev/', library_version=2003, library='stelib',
+                 rootdir='/data/highzgal/mehta/Software/galaxev', library_version=2003,
                  workdir=None, cleanup=True, verbose=False):
 
         """
-        metallicity:     0.0001(m22), 0.0004(m32), 0.004(m42), 0.004(m52), 0.02(m62), 0.05(m72) [BC2003 option]
+        metallicity:     0.0001(m22), 0.0004(m32), 0.004(m42), 0.008(m52), 0.02(m62), 0.05(m72) [BC2003 option]
         age:             0 < age < 13.5 Gyr [BC2003 option]
         sfh:             Star formation history [BC2003 option]
                             - 'constant':   constant SFR (requires SFR, TCUTSFR)
@@ -58,7 +58,6 @@ class TemplateSED_BC03(object):
         rootdir:         Root directory for the GALAXEv installation
         workdir:         Working directory to store temporary files
         library_version: Specify which version of BC03 -- 2003, 2012
-        library:         Specify specific library (only valid for 2012 version) -- 'stelib','BaSeL'
         input_ised:      Option to directly specify what input ISED file to use
         cleanup:         Cleanup the temporary files?
         verbose:         Print messages to terminal?
@@ -89,8 +88,12 @@ class TemplateSED_BC03(object):
         self.lya_esc     = lya_esc
         self.lyc_esc     = lyc_esc
         self.rootdir     = rootdir
-        self.library     = library
         self.library_version = library_version
+
+        if self.library_version==2012:
+            if    self.res=="lr": self.library = "BaSeL"
+            elif  self.res=="hr": self.library = "stelib"
+            else: self.library = None
 
         if input_ised:
             if ".ised" in input_ised: input_ised = input_ised[:-5]
@@ -175,9 +178,6 @@ class TemplateSED_BC03(object):
         if self.library_version not in [2003,2012]:
             raise Exception("Invalid library_version: "+str(self.library_version)+"\n" \
                             "Please choose from: 2003,2012")
-        if self.library not in ['stelib','BaSeL']:
-            raise Exception("Incorrect library choice: "+str(self.library)+"\n" \
-                            "Please choose from: 'stelib','BaSeL'")
 
     def define_env(self):
 
@@ -189,7 +189,10 @@ class TemplateSED_BC03(object):
 
     def del_file(self,f):
 
-        if os.path.isfile(f): os.remove(f)
+        try:
+            os.remove(f)
+        except FileNotFoundError:
+            pass
 
     def generate_sed(self):
 
@@ -343,7 +346,12 @@ class TemplateSED_BC03(object):
         dtype = [('waves',float),]+[('spec%i'%(i+1),float) for i in range(len(self.age))]
         self.sed = np.genfromtxt(self.workdir+self.csp_output+'.spec',dtype=dtype)
         age3, Q = np.genfromtxt(self.workdir+self.csp_output+'.3color', usecols=(0,5), unpack=True)
-        age4, M = np.genfromtxt(self.workdir+self.csp_output+'.4color', usecols=(0,6), unpack=True)
+        if self.library_version==2003:
+            age4, M_star = np.genfromtxt(self.workdir+self.csp_output+'.4color', usecols=(0,6), unpack=True)
+            M = M_star
+        elif self.library_version==2012:
+            age4, M_star, M_remn = np.genfromtxt(self.workdir+self.csp_output+'.4color', usecols=(0,5,6), unpack=True)
+            M = M_star + M_remn
 
         for x,age in zip(self.sed.dtype.names[1:],self.age):
 
@@ -366,8 +374,8 @@ class TemplateSED_BC03(object):
     def add_emlines(self):
 
         for x in self.sed.dtype.names[1:]:
-            self.sed[x] = add_emission_lines(sed_waves=self.sed['waves'], sed_spec=self.sed[x], 
-                                             Q=self.Q[x], metallicity=self.metallicity, 
+            self.sed[x] = add_emission_lines(sed_waves=self.sed['waves'], sed_spec=self.sed[x],
+                                             Q=self.Q[x], metallicity=self.metallicity,
                                              units=self.units, lya_esc=self.lya_esc)
 
     def add_dust(self):
@@ -401,7 +409,7 @@ class TemplateSED_BC03(object):
 
         ax.set_xscale('log')
         ax.set_yscale('log')
-        ax.set_xlabel('Rest-frame Wavelength ($\AA$)')
+        ax.set_xlabel('Rest-frame Wavelength ($\\AA$)')
         if self.units == 'flambda': ax.set_ylabel(r'F$_\lambda$ [ergs/s/$\AA$]')
         elif self.units == 'fnu':   ax.set_ylabel(r'F$_\nu$ [ergs/s/Hz]')
 

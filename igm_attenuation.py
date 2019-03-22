@@ -50,7 +50,7 @@ def inoue_tau(l,z):
         tau_LAF_LC[cond1] += (5.22e-4*(A**3.4)*(B[cond1]**2.1)) + (0.325*B[cond1]**1.2) - (3.14e-2*B[cond1]**2.1)
         tau_LAF_LC[cond2] += (5.22e-4*(A**3.4)*(B[cond2]**2.1)) + (0.218*B[cond2]**2.1) - (2.55e-2*B[cond2]**3.7)
         tau_LAF_LC[cond3] += 5.22e-4*((A**3.4)*(B[cond3]**2.1) - B[cond3]**5.5)
-    else: print 'Error in LAF component of tau for LyC'
+    else: print('Error in LAF component of tau for LyC')
 
     # DLA Component for LyC
     if z < 2.0:
@@ -61,6 +61,6 @@ def inoue_tau(l,z):
         cond2 = (obs_l >=3.0*ly_l) & (obs_l < A*ly_l)
         tau_DLA_LC[cond1] = 0.634 + (4.7e-2*A**3.0) - (1.78e-2*(A**3.3)*(B[cond1]**-0.3)) - (0.135*B[cond1]**2.0) - (0.291*B[cond1]**-0.3)
         tau_DLA_LC[cond2] = (4.70e-2*A**3.0) - (1.78e-2*(A**3.3)*(B[cond2]**-0.3)) - (2.92e-2*B[cond2]**3.0)
-    else: print 'Error in DLA component of tau for LyC'
+    else: print('Error in DLA component of tau for LyC')
 
     return tau_LAF_LS + tau_DLA_LS + tau_LAF_LC + tau_DLA_LC
