@@ -13,10 +13,13 @@ def add_emission_lines(sed_waves, sed_spec, Q, metallicity, units, lya_esc=0.2):
     l_ha = 6563.
     l_lya = 1216.
 
-    lum_hb = 4.757e-13 * 10**Q
-    lum_ha = 1.37e-12 * 10**Q
-    lum_lya = 1.04e-11 * 10**Q * lya_esc
+    lum_hb = 4.757e-13 * 10**Q              # See Hbeta_flux_calc.pdf
+    lum_ha = 1.37e-12 * 10**Q               # Ha/Hb = 2.87
+    lum_lya = 1.04e-11 * 10**Q * lya_esc    # Lya/Ha = 7.59
 
+    ### Rest of the line fluxes are specified
+    ### line ratios w.r.t. Hb flux
+    ### following Anders+03 (A&A, 401, 1063)
     if metallicity in [0.0001, 0.0004]:
         ratios = line_ratios['M32_RATIO'][0]
     elif metallicity in [0.004, ]:
