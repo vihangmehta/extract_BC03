@@ -4,13 +4,13 @@ from extract_bc03 import TemplateSED_BC03
 
 def plot():
 
-    template = TemplateSED_BC03(metallicity=0.02, age=[1,2,3,5,10], sfh='exp', tau=2, Av=1,
+    template = TemplateSED_BC03(metallicity=0.02, age=[1,2,3,5,10], sfh='exp', tau=2, Av=0,
                                 #input_ised='bc2003_lr_BaSeL_m52_chab_ssp.ised',
-                                dust='calzetti', emlines=True,
+                                dust='calzetti', emlines=False,
                                 redshift=3, igm=True,
                                 imf='chab', res='lr', uid='test', units='flambda',
-                                rootdir='/data/highzgal/mehta/galaxev12/',workdir='.',
-                                library_version=2012, library='BaSeL',
+                                rootdir='/data/highzgal/mehta/Software/galaxev12/', workdir='.',
+                                library_version=2012,
                                 cleanup=True,verbose=False)
     template.generate_sed()
 
@@ -20,11 +20,13 @@ def plot():
     for x,c in zip(template.sed.dtype.names[1:],plt.cm.Greys(cind)):
         ax.plot(template.sed['waves'],template.sed[x],c=c,lw=1.25,alpha=0.8)
 
-    template.add_emlines()
+    template.emlines = True
+    template.generate_sed()
     for x,c in zip(template.sed.dtype.names[1:],plt.cm.Blues(cind)):
         ax.plot(template.sed['waves'],template.sed[x],c=c,lw=1.25,alpha=0.8)
 
-    template.add_dust()
+    template.Av = 1
+    template.generate_sed()
     for x,c in zip(template.sed.dtype.names[1:],plt.cm.Reds(cind)):
         ax.plot(template.sed['waves'],template.sed[x],c=c,lw=1.25,alpha=0.8)
 
